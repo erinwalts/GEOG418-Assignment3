@@ -1,6 +1,11 @@
 # GEOG418-Assignment3
-Introduction
-  Describe libraries
+Introduction:
+Spatial autocorrelation is a type of statistical test that compares how similar or dissimilar a variable is within a dataset on a geographical space [1]. It calculates the correlation between observations within a study area to determine if the variable is clustered, random, or dispersed, similar to nearest neighbour, K function, and quadrat analysis. This test follows Tobler's first law of geography: "everything is related to everything else, but near things are more related than far things" [2], the assumption that observations closer together are more related, and observations farther apart are less related, conclusion about the spatial patterns of the dataset can be conducted. Spatial autocorrelation uses distance and variability to measure similarity or dissimilarity of observations and is useful to determine where clustering or lack of clustering occurs. It is also helpful in supplying the degrees of spatial autocorrelation, or how related things are based on distance, and this can be used to measure the strength of spatial effects in observations[3]. Positive spatial autocorrelation refers to clustering of points, and negative spatial autocorrelation refers to dispersed points. If a variables follows a random distribution, there is no spatial autocorrelation present in the dataset.
+
+For this tutorial, we are conducting spatial autocorrelation on census data for the city of Kelowna, BC. The census data was obtained from ____ and contains the two variables 'French Knowledge' and 'Median Total Income', which will be analyzed for their spatial distribution. Census data is a useful source of information to use in spatial autocorrelation analysis, as it contains data on many variables (ex: income or population size), and is updated every five years[4]. 
+
+To conduct spatial autocorrelation in this tutorial, we are using R Studio and have to install several packages. In the code below, the '#' hashtag symbol indicates a note within R, and won't be read as code. Delete this symbol to enable the packages to be installed. Libraries are the directories where these packages are stored and have to be loaded into the code to be enabled[5].
+  
 ```{r Libraries, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
 #install.packages("knitr")
 #install.packages("tmap")
@@ -10,7 +15,7 @@ Introduction
 #install.packages("e1071")
 #install.packages("sf")
 #install.packages("st")
-#load libraries
+
 library("knitr")
 library("tmap")
 library("spdep")
@@ -19,7 +24,6 @@ library("shinyjs")
 library("e1071")
 library("sf")
 library("st")
-#no rgdal available so deleted
 ```
 
   Describe shapefiles, and census data files:
