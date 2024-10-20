@@ -105,7 +105,7 @@ map_French <- tm_shape(French_noNA) +
   tm_polygons(col = "PercFrench", 
               title = "Percentage with \n French Knowledge", 
               style = "jenks", 
-              palette = "inferno", n = 6,
+              palette = "viridis", n = 6,
               border.alpha = 0,
               colorNA = "grey") +
   tm_layout(legend.position = c("RIGHT", "TOP"))
@@ -114,16 +114,16 @@ tmap_arrange(map_Income, map_French, ncol = 2, nrow = 1)
 ```
 
 Neighbourhood Matrix
-  describe concept of weighted neighbourhood matrix
+To spatially quantify autocorrelation, the study area is overlain with a raster grid to determine what is a neighbour of an observed point. A neighbour are the cells around a observation point, there are several ways to describe which cells are neighbours and which are not. The rook weight assigns the top, bottom, left and right squares of a observation point as the neigbours, think of a rook chess piece that can only move horizontally and vertically. The queen weight assigns every cell touching the observation point as a neighbour, think of the queen piece which can move horizontally, vertically, and diagonally. A cell designated as a neighbour receives a value of '1', and non-neighbour cells are valued as '0', following the binary system.
+
+The function poly2nb() is a function used to change the neighbourhood matrix between queen and rook weights. By inserting 'queen - FALSE', we can change from a queen weight to a rook weight [8]. 
 
 ```{r Neighbours, echo=TRUE, eval=TRUE, warning=FALSE}
 #Income Neighbours - Queens weight
-# Use st_coordinates to get the coordinates:
 Income.nb <- poly2nb(Income_noNA)
 Income.net <- nb2lines(Income.nb, coords=st_coordinates(st_centroid(Income_noNA)))
 crs(Income.net) <- crs(Income_noNA)
 #Income Neighbours - Rooks weight
-#CRS projargs should not be NULL; set to NA? -warning
 Income.nb2 <- poly2nb(Income_noNA, queen = FALSE)
 Income.net2 <- nb2lines(Income.nb2, coords=st_coordinates(st_centroid(Income_noNA)))
 crs(Income.net2) <- crs(Income_noNA)
@@ -155,6 +155,7 @@ IncomeBoth <- tm_shape(Income_noNA) + tm_borders(col='black') +
 #Print maps in a three pane figure
 tmap_arrange(IncomeQueen, IncomeRook, IncomeBoth, ncol = 3, nrow = 1)
 ```
+This categorization is held within a matrix that operates using row-standardized form, reading the grid from left to right [7]. The function 'nb2lines' 
 
 Describe code for weighted matrix file:
 
