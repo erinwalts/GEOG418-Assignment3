@@ -89,11 +89,9 @@ Next, we will create a map that shows the distribution of the two variables in K
 Maps for the two variables are created by first calling the variable's census dataframe to a shape, and then using the polygon and layout function to create the map. The polygon function calls the variable attribute column as the data source and includes other features like title, style which describes how the data is classified and we are using the Jenks method which are natural breaks[6], and border lines. In the layout function, external map features like the legend are and its position are created.
 
 ```{r StudyArea, echo=TRUE, eval=TRUE, warning=FALSE, fig.cap="Kamloops census dissemination areas showing median total income (left) and percentage of respondants with knowledge of french (right)."}
-#hatch inside
 #Choose a palette
 tmaptools::palette_explorer() #Tool for selecting palettes
 
-#Map median Income
 map_Income <- tm_shape(Income_noNA) + 
   tm_polygons(col = "Median total income", 
               title = "Median total income", 
@@ -103,7 +101,6 @@ map_Income <- tm_shape(Income_noNA) +
               colorNA = "grey") +
   tm_layout(legend.position = c("RIGHT", "TOP"))
 
-#Map French Knowledge
 map_French <- tm_shape(French_noNA) + 
   tm_polygons(col = "PercFrench", 
               title = "Percentage with \n French Knowledge", 
