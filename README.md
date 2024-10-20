@@ -1,8 +1,9 @@
 # GEOG418-Assignment3
-Introduction:
+**Spatial Autocorrelation**
+
 Spatial autocorrelation is a type of statistical test that compares how similar or dissimilar a variable is within a dataset on a geographical space [1]. It calculates the correlation between observations within a study area to determine if the variable is clustered, random, or dispersed, similar to nearest neighbour, K function, and quadrat analysis. This test follows Tobler's first law of geography: "everything is related to everything else, but near things are more related than far things" [2], the assumption that observations closer together are more related, and observations farther apart are less related, conclusion about the spatial patterns of the dataset can be conducted. Spatial autocorrelation uses distance and variability to measure similarity or dissimilarity of observations and is useful to determine where clustering or lack of clustering occurs. It is also helpful in supplying the degrees of spatial autocorrelation, or how related things are based on distance, and this can be used to measure the strength of spatial effects in observations[3]. Positive spatial autocorrelation refers to clustering of points, and negative spatial autocorrelation refers to dispersed points. If a variables follows a random distribution, there is no spatial autocorrelation present in the dataset.
 
-For this tutorial, we are conducting spatial autocorrelation on census data for the city of Kelowna, BC. The census data was obtained from ____ and contains the two variables 'French Knowledge' and 'Median Total Income', which will be analyzed for their spatial distribution. Census data is a useful source of information to use in spatial autocorrelation analysis, as it contains data on many variables (ex: income or population size), and is updated every five years[4]. 
+For this tutorial, we are conducting spatial autocorrelation on census data for the city of Kelowna, BC. The census data was obtained from statistics Canada (2016) and contains the two variables 'French Knowledge' and 'Median Total Income', which will be analyzed for their spatial distribution. Census data is a useful source of information to use in spatial autocorrelation analysis, as it contains data on many variables (ex: income or population size), and is updated every five years[4]. 
 
 To conduct spatial autocorrelation in this tutorial, we are using R Studio and have to install several packages. In the code below, the '#' hashtag symbol indicates a note within R, and won't be read as code. Delete this symbol to enable the packages to be installed. Libraries are the directories where these packages are stored and have to be loaded into the code to be enabled[5].
   
@@ -26,76 +27,66 @@ library("sf")
 library("st")
 ```
 
-  Describe shapefiles, and census data files:
+A directory is where the code will pull the data from, set your working directory as a file location where your data is stored. Once your directory is set, data files like csv's or shapefiles can be called into R. We will call the csv file containing the census data, and the shapefile containing spatial data for BC.
 
 ```{r Read in data, echo=TRUE, eval=TRUE, warning=FALSE}
 #set directory:
 dir <- "C:/Users/Owner/Documents/UVIC_2024-2025/GEOG418/Assignment_3"
 setwd(dir)
-#set directory;
-#From the working dir read in the csv
 csv <- read.csv("ucgsJQnBVLvP_data.csv") 
-#Data source is the working dir (where the layer is), layer is the name of the file (without .shp)
 shp <- st_read("lda_000a16a_e.shp")
 ```
-  Describe clean up
+
+Since the census data contains information for all of Canada, we will create a new column to include relevant attributes. This column will be added to a dataframe called 'colnames', and a filter will be applied to remove data IDs with less than eight numbers to clean up the census data. The spatial and aspatial data, which includes the shapefile and cleaned csv file, are merged into a new object called 'censuus_DAs'.
+
+We will choose the city of Kelowna as the study area for this tutorial, and create a new object called 'Municp' that contains census and spatial data only for Kelowna. The variable 'French Knowledge' is converted to a rate in percentage of French speakers.
 
 ```{r Clean data, echo=TRUE, eval=TRUE, warning=FALSE}
-#CLEAN UP DATA
-#new column
 cols <- c("GEO UID", "Province code", "Province name", "CD code",
           "CD name", "DA name", "Population", "Land area", 
           "Median total income", "Income Sample Size", "French Knowledge", 
           "Language Sample Size")
-#Apply those names to dataframe
 colnames(csv) <- cols
 #Add column to count number of ID characters
 csv$len <- nchar(csv$`GEO UID`)
 #Remove IDs with less than 8 numbers
 csv_clean <- subset(csv, csv$len == 8)
-#Merge spatial and aspatial data
 census_DAs <- merge(shp, csv_clean, 
                     by.x = "DAUID", 
                     by.y = "GEO UID", 
                     all.x = TRUE)
-#Choose a city
+
 Municp <- subset(census_DAs, census_DAs$CMANAME == "Kelowna")
-#Convert to rate
 Municp$PercFrench <- (Municp$`French Knowledge`/Municp$`Language Sample Size`)*100
 ```
 
-Describe only using relevant data:
+Before we apply statistical anlaysis, the two variables need to be cleaned to remove any values containing NULL or 0s, which can impact the final results.
 
 ```{r NA Remove, echo=TRUE, eval=TRUE, warning=FALSE}
-#CONFIRM CLEAN UP OF DATA
-#Remove Income NA
 Income_noNA <- Municp[which(!is.na(Municp$"Median total income")),]
-#Remove French NA
 French_noNA <- Municp[which(!is.na(Municp$"French Knowledge")),]
 ```
 
-Describe the descriptive stats:
+The first step in statistical analysis is conducting descriptive statistics on our two variables, French Knowledge and Median Total Income, which includes calculating the mean, standard deviation, and skewness to determine the distribution of the data along the mean. These results are put into a table so we can see the data succinctly.
 
 ```{r DescriptiveStats, echo=TRUE, eval=TRUE, warning=FALSE}
-#ANALYSIS
-#Calculate descriptive stats for Income
 meanIncome <- mean(Income_noNA$"Median total income")
 stdevIncome <- sd(Income_noNA$"Median total income")
 skewIncome <- skewness(Income_noNA$"Median total income")
-#Calculate descriptive stats for French
+
 meanFrench <- mean(French_noNA$"French Knowledge")
 stdevFrench <- sd(French_noNA$"French Knowledge")
 skewFrench <- skewness(French_noNA$"French Knowledge")
-#Create dataframe for display in table
+
 data <- data.frame(Variable = c("Income", "French Language"),
                    Mean = c(round(meanIncome,2), round(meanFrench,2)),
                    StandardDeviation = c(round(stdevIncome,2), round(stdevFrench,2)),
                    Skewness = c(round(skewIncome,2), round(skewFrench,2)))
-#Produce table
 kable(data, caption = paste0("Descriptive statistics for ", 2016, " census variables"))
 ```
 
-Describe how map is created:
+Next, we will create a map that shows the distribution of the two variables in Kelowna. The function: tmaptools::palette_explorer(), is a selection tool used to choose colour palettes; a new window will open with palettes available, make sure to delete this window before continuing on in the code. 
+Maps for the two variables are created by first calling the variable's census dataframe to a shape, and then using the polygon and layout function to create the map. The polygon function calls the variable attribute column as the data source and includes other features like title, style which describes how the data is classified and we are using the Jenks method which are natural breaks[6], and border lines. In the layout function, external map features like the legend are and its position are created.
 
 ```{r StudyArea, echo=TRUE, eval=TRUE, warning=FALSE, fig.cap="Kamloops census dissemination areas showing median total income (left) and percentage of respondants with knowledge of french (right)."}
 #hatch inside
