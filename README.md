@@ -169,13 +169,13 @@ print(subset_weights)
 ```
 
 ### Global Moran's I:
-The Global Moran's I is a test statistic that calculates one value for the entire dataset, in this case for each of our variables. This test determines the spatial autocorrelation of the dataset, how similar (clustered or positive) or dissimilar (dispersed or negative) the observations within the dataset are to each other [3]. The Global Moran's I equation is shown below:
+The Global Moran's I is a test statistic that calculates one value for the entire dataset, in this case for each of our variables. This test determines the spatial autocorrelation of the dataset, how similar (clustered or positive) or dissimilar (dispersed or negative) the observations within the dataset are to each other [3]. Global Moran's I values that are relatively high (closer to 1) indicate positive spatial autocorrelation, and values that are relatively low (closer to -1) indicate negative spatial autocorrelation; values that are around zero indicate a random distribution [10]. The Global Moran's I equation is shown below:
 
 $$
 I = \frac{\sum_{i=1}^n\sum_{j=1}^nW_{i,j}(x_i - \bar{x})(x_j - \bar{x})}{(\sum_{i=1}^n\sum_{j=1}^nW_{i,j})\sum_{i=1}^n(x_i - \bar{x})^2}
 $$
 
-This equation sums the multiple 'i' (observation) and 'j' (neighbour) values together with an assigned weight 'w'. This value is multiplied by the observation value 'x(i)' subtracted from the observation mean for the entire dataset, and multiply by the neighbour value 'x(j)' subtracted from the neighbour mean for the entire dataset [10]. The denominator standardizes the resultant value since we divide by a squared value. 
+This equation sums the multiple 'i' (observation) and 'j' (neighbour) values together with an assigned weight 'w'. This value is multiplied by the observation value 'x(i)' subtracted from the observation mean for the entire dataset and multiplied by the neighbour value 'x(j)' subtracted from the neighbour mean for the entire dataset [11]. The denominator standardizes the resultant value since we divide by a squared value. 
 
 ```{r Global Morans I, echo=TRUE, eval=TRUE, warning=FALSE}
 #Calculate Global Moran's I for Income
@@ -193,7 +193,11 @@ eIFrench <- miFrench$estimate[[2]]
 varFrench <- miFrench$estimate[[3]]
 ```
 
-Describe the results:
+The code will give results for the Global Moran's I (mIvariable), the expected I (eIvariable) which is the value calculated for a random distribution of this dataset, and variance (varvariable).
+The variable Median Total Income resulted in a Moran's I of approx. 0.5787. Since this value is closer to 1 compared to the expected Moran's I of approx. -0.0041, this indicates the spatial pattern is clustered, and we can assume this variable displays positive spatial autocorrelation. 
+The variable French Knowledge resulted in a Moran's I of approx. 0.2671 and an expected Moran's I of -0.004. Since the Moran's I value is closer to 1 compared to the expected Moran's I, this indicates a clustered spatial pattern, and we can assume this variable also displays positive spatial autocorrelation. Next, we will calculate the Global Moran's I range for the two variables.
+
+We can calculate the range of Moran I values for each variable to gives us an idea of the range of Moran I values within the datasets:
 
 ```{r Global Morans Range, echo=TRUE, eval=TRUE, warning=FALSE}
 #Function to calculate the range of global Moran's I
@@ -202,12 +206,19 @@ moran.range <- function(lw) {
   return(range(eigen((wmat + t(wmat))/2)$values))
 }
 #Calculate the range for the Income variable
-range <- moran.range(Income.lw)
-minRange <- range[1]
-maxRange <- range[2]
+rangeI <- moran.range(Income.lw)
+minRangeI <- range[1]
+maxRangeI <- range[2]
+#Calculate the range for the French variable
+rangeF <- moran.range(French.lw)
+minRangeF <- range[1]
+maxRangeF <- range[2]
 ```
 
-Describe what results indicate:
+For variable Median Total Income, the range is -0.556 to 1.039. For the variable French Knowledge, the range is -0.696 to 1.047.
+The minimum range indicates dispersion or negative spatial autocorrelation, and the maximum range indicates clustering or positive spatial autocorrelation.
+
+To determine if the calculated Global Moran's I values for the two variables have significant spatial autocorrelation we can perform a Z test. Our null hypothesis is that the Global Moran's I value for each variable are not different from random. Our alternate hypothesis is that the Global Moran's I value fo reach variable are different from random (indicate spatial autocorrelation). Using a 95% confidence interval which is associated with a standard deviation of +/-1.96, and a pvalue of 0.05, we can assume that a Z score smaller than -1.96 and greater than +1.96, indicates a significant result and we are forced to reject the null hypothesis [12]. 
 
 ```{r Global Morans ZScore, echo=TRUE, eval=TRUE, warning=FALSE}
 #Calculate z-test for Income
@@ -215,9 +226,9 @@ zIncome <- (mIIncome - eIIncome) / (sqrt(varIncome))
 #Calculate z-test for French
 zFrench <- (mIFrench - eIFrench) / (sqrt(varFrench))
 ```
- explain what the Z score mean^
+The Z score for the Total Median Income variable is 15.5819, which is greater than 1.96, therefore we are forced to reject the null hypothesis and conclude there is significant spatial autocorrelation. The Z score for the French Knowledge variable is 7.4184 which is also greater than 1.96, and again we are forced to reject the null hypothesis and conclude there is significant spatial autocorrelation.
 
- Local Spatial Autocorrelation
+### Local Spatial Autocorrelation:
  explain ^
  
 $$
