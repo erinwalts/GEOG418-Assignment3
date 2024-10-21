@@ -116,7 +116,7 @@ tmap_arrange(map_Income, map_French, ncol = 2, nrow = 1)
 Neighbourhood Matrix
 To spatially quantify autocorrelation, the study area is overlain with a raster grid to determine what is a neighbour of an observed point. A neighbour are the cells around a observation point, there are several ways to describe which cells are neighbours and which are not. The rook weight assigns the top, bottom, left and right squares of a observation point as the neigbours, think of a rook chess piece that can only move horizontally and vertically. The queen weight assigns every cell touching the observation point as a neighbour, think of the queen piece which can move horizontally, vertically, and diagonally. A cell designated as a neighbour receives a value of '1', and non-neighbour cells are valued as '0', following the binary system.
 
-The function poly2nb() is a function used to change the neighbourhood matrix between queen and rook weights. By inserting 'queen - FALSE', we can change from a queen weight to a rook weight [8]. 
+The function poly2nb() is a function used to change the neighbourhood matrix between queen and rook weights. By inserting 'queen - FALSE', we can change from a queen weight to a rook weight [7]. Both the rook and queen weights are applied to the two variables.
 
 ```{r Neighbours, echo=TRUE, eval=TRUE, warning=FALSE}
 #Income Neighbours - Queens weight
@@ -137,27 +137,26 @@ French.net2 <- nb2lines(French.nb2, coords=st_coordinates(st_centroid(French_noN
 crs(French.net2) <- crs(French_noNA)
 ```
 
-Explain how maps (weighted rook & queen) below are created and what they show:
+Next, we will map the rook and queen weights separately, and then together in a three pane map window. Similar to the previous map, a shape is created with the median income variable with borders on black, and another shape is created with the queen weight as calculated in the previous code, 'Income.net'. This is done with the rook weight as well. To combine the two maps, '+' symbols are used to join together the queen and rook codes. 
+These maps display the connection of observation points to each other in shown by the blue lines[8]. Since the study area is quite large, the differences between the two weight types are small but are distinct enough that between the rook and queen maps several lines are missing. The type of neighbour matrix, rook or queen, determines what constitutes a neighbour, which is why the queen map has more lines connecting points than the rook map. 
 
-```{r Neighboursmap, echo=TRUE, eval=TRUE, warning=FALSE, fig.cap="Kamloops census dissemination areas showing median total income neighbours queens weight (left)  rooks weight (middle) and the combination of the two (right)."}
-#Make queens map
-#Choose a palette
-#tmaptools::palette_explorer()
+```{r Neighboursmap, echo=TRUE, eval=TRUE, warning=FALSE, fig.cap="Kelowna census dissemination areas showing median total income neighbours queens weight (left)  rooks weight (middle) and the combination of the two (right)."}
+#Queens map
 IncomeQueen <- tm_shape(Income_noNA) + tm_borders(col='black') + 
-  tm_shape(Income.net) + tm_lines(col='blue')
-#Make rooks map
+  tm_shape(Income.net) + tm_lines(col='blue', lwd = 1)
+#Rooks map
 IncomeRook <- tm_shape(Income_noNA) + tm_borders(col='black') + 
-  tm_shape(Income.net2) + tm_lines(col='blue', lwd = 2)
-#Make combined map
+  tm_shape(Income.net2) + tm_lines(col='blue', lwd = 1)
+#Combined map
 IncomeBoth <- tm_shape(Income_noNA) + tm_borders(col='black') + 
-  tm_shape(Income.net) + tm_lines(col='blue', lwd = 2) +
-  tm_shape(Income.net2) + tm_lines(col='blue', lwd = 2)
+  tm_shape(Income.net) + tm_lines(col='blue', lwd = 1) +
+  tm_shape(Income.net2) + tm_lines(col='blue', lwd = 1)
 #Print maps in a three pane figure
 tmap_arrange(IncomeQueen, IncomeRook, IncomeBoth, ncol = 3, nrow = 1)
 ```
-This categorization is held within a matrix that operates using row-standardized form, reading the grid from left to right [7]. The function 'nb2lines' 
-
-Describe code for weighted matrix file:
+Weighted Matrix
+The weight matrix is basically how the R code reads the grid cells of the study area based on a defined neighbourhood structure. The categorization for how the code reads the cells is defined by the style, or type; there are three types: B, C, and W. The code sets up a n x n matrix with values determined from the chosen style. The B style is the basic binary coding with 0s and 1s, C is globally standardized where all neighbours in the dataset are applied the same weight, and W is row standardized where all the neighbours along a row are divided by the row sum [9].
+The function 'nb2lines' of the 'spdep' package is used to create this matrix. 
 
 ```{r Final weights, echo=TRUE, eval=TRUE, warning=FALSE}
 #Create Income weights matrix
