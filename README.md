@@ -1,5 +1,5 @@
 # Spatial Autocorrelation
-### Introduction:
+### Introduction
 Spatial autocorrelation is a type of statistical test that compares how similar or dissimilar a variable is within a dataset on a geographical space [1]. It calculates the correlation between observations within a study area to determine if the variable is clustered, random, or dispersed, similar to nearest neighbour, K function, and quadrat analysis. This test follows Tobler's first law of geography: "everything is related to everything else, but near things are more related than far things" [2], the assumption that observations closer together are more related, and observations farther apart are less related, conclusion about the spatial patterns of the dataset can be conducted. Spatial autocorrelation uses distance and variability to measure similarity or dissimilarity of observations and is useful to determine where clustering or lack of clustering occurs. It is also helpful in supplying the degrees of spatial autocorrelation, or how related things are based on distance, and this can be used to measure the strength of spatial effects in observations[3]. Positive spatial autocorrelation refers to clustering of points, and negative spatial autocorrelation refers to dispersed points. If a variable follows a random distribution, there is no spatial autocorrelation present in the dataset.
 
 For this tutorial, we are conducting spatial autocorrelation on census data for the census metropolitan area of Kelowna, BC. The census data was obtained from statistics Canada (2016) and contains the two variables 'French Knowledge' and 'Median Total Income', which will be analyzed for their spatial distribution. Census data is a useful source of information to use in spatial autocorrelation analysis, as it contains data on many variables (ex: income or population size), and is updated every five years [4]. 
@@ -113,6 +113,9 @@ map_French <- tm_shape(French_noNA) +
 tmap_arrange(map_Income, map_French, ncol = 2, nrow = 1)
 ```
 
+![income_french_map1](https://github.com/user-attachments/assets/ad2e47da-d6bb-4fcc-a2f4-c0aa92f346b5)
+
+
 ### Neighbourhood Matrix
 To spatially quantify autocorrelation, the study area is overlain with a raster grid to determine what is a neighbour of an observed point. A neighbour are the cells around an observation point, there are several ways to describe which cells are neighbours and which are not. The rook weight assigns the top, bottom, left and right squares of a observation point as the neighbours, think of a rook chess piece that can only move horizontally and vertically. The queen weight assigns every cell touching the observation point as a neighbour, think of the queen piece which can move horizontally, vertically, and diagonally. A cell designated as a neighbour receives a value of '1', and non-neighbour cells are valued as '0', following the binary system.
 
@@ -155,6 +158,8 @@ IncomeBoth <- tm_shape(Income_noNA) + tm_borders(col='black') +
 #Print maps in a three pane figure
 tmap_arrange(IncomeQueen, IncomeRook, IncomeBoth, ncol = 3, nrow = 1)
 ```
+![rook_queen_weightsmaps_2 0](https://github.com/user-attachments/assets/0435fbf0-0f43-4667-908d-5e445a7de421)
+
 ### Weighted Matrix
 The weight matrix is basically how the R code reads the grid cells of the study area based on a defined neighbourhood structure (rook or queen). The categorization for how the code reads the cells is defined by the style, or type, there are three types: B, C, and W. The code sets up an n x n matrix that goes through the grid cells assigning values based on the chosen style. The B style is the basic binary coding with 0s and 1s, C is globally standardized where all neighbours in the dataset are applied the same weight, and W is row standardized where all the neighbours along a row are divided by the row sum [8, 9]. In this tutorial, we will use the W function as it assigns an equal weight to each neighbour making them spatially contiguous; each observation value is proportionally represented [3].
 
@@ -171,7 +176,7 @@ subset_weights <- c(Income.matrix, French.matrix)
 print(subset_weights)
 ```
 
-### Global Moran's I:
+### Global Moran's I
 The Global Moran's I is a test statistic that calculates one value for the entire dataset, in this case for each of our variables. This test determines the spatial autocorrelation of the dataset, how similar (clustered or positive) or dissimilar (dispersed or negative) the observations within the dataset are to each other [3]. Global Moran's I values that are relatively high indicate positive spatial autocorrelation, and values that are relatively low indicate negative spatial autocorrelation; values that are around zero indicate a random distribution [10]. The Global Moran's I equation is shown below:
 
 $$
@@ -233,7 +238,7 @@ zFrench <- (mIFrench - eIFrench) / (sqrt(varFrench))
 ```
 The Z score for the Total Median Income variable is 15.5819, which is greater than 1.96, therefore we are forced to reject the null hypothesis and conclude there is significant spatial autocorrelation. The Z score for the French Knowledge variable is 7.4184 which is also greater than 1.96, and again we are forced to reject the null hypothesis and conclude there is significant spatial autocorrelation.
 
-### Local Spatial Autocorrelation:
+### Local Spatial Autocorrelation
 Local spatial autocorrelation is concerned about the relationships between each observation point and its surroundings, rather than the overall relationship of the points' spatial distribution [13]. Using the local indicators of spatial association (LISA) test we can conduct a local Moran's I analysis to determine how similar or dissimilar each point is to each other in the dataset [14]. The formula for the LISA test is similar to the Global Moran's I as seen below.
  
 $$
@@ -298,6 +303,8 @@ map_LISA_French <- tm_shape(French_noNA) +
 tmap_arrange(map_LISA_Income, map_LISA_French, ncol = 2, nrow = 1)
 ```
 
+![maps_variables_moransi](https://github.com/user-attachments/assets/cc2bc836-9350-4729-bd67-430e9d8f7531)
+
 The resultant maps show the LISA values for each observation divided into observation points that have significant negative local spatial autocorrelation (blue), unsignificant distribution (grey), and significant positive local spatial autocorrelation (red). This is useful as we can easily see which areas show clustering, or hotspots, and which areas are dispersed.  
 
 In the census metropolitan area of Kelowna, it seems that the median total income variable has clustering around the city of Kelowna area, and dispersion on the census tracts to the southeast. For the French knowledge variable, there seems to be clustering in small hotspots around the study area, and dispersion in census tracts near the city and to the northeast.
@@ -315,6 +322,8 @@ moran.plot(Income_noNA$"Median total income", Income.lw, zero.policy=TRUE, spChk
 moran.plot(French_noNA$"PercFrench", French.lw, zero.policy=TRUE, spChk=NULL, labels=NULL, xlab="Respondants with knowledge of French (%)", 
            ylab="Spatially Lagged knowledge of French (%)", quiet=NULL)
 ```
+![scatterplot_income](https://github.com/user-attachments/assets/43fbe08c-02bb-451b-a8a5-ca2e2734cc08)
+![scatterplot_french](https://github.com/user-attachments/assets/219db319-f7e4-447b-abbb-268287e85d4a)
 
 Scatterplots are particularly useful because they show all LISA points across negative and positive distributions. The x-axis is the locations of value 'i', our observation data, and the y-axis is values in the neighbourhood of location 'i', these are our 'j' or neighbourhood values [15]. The bottom left and upper right boxes indicate spatial clustering of similar values, where the bottom are low values from the mean and the upper are high values from the mean; the bottom right and upper left boxes indicate spatial dispersion of dissimilar values [14]. Points with diamond symbol indicate significance, with a pvalue < 0.05.
 
@@ -322,7 +331,7 @@ The Median Total Income variable scatterplot shows the distribution of LISA valu
 
 The French Knowledge variable scatterplot shows the distribution of LISA values across a positive regression line, indicating the dataset is overall positive spatially autocorrelated. The dataset is slightly skewed towards bottom left box, indicating a skew towards similar values lower than the mean. Several data points show significance, located in every box on the graph; this indicates that the data points in the bottom left and upper right are significantly clustered, and that data points in the bottom right and upper left are significantly dispersed.
 
-### Summary:
+### Summary
 We analyzed 2016 census data for Kelowna, BC to understand if the two variables, Median Total Income and French Knowledge, demonstrate spatial autocorrelation. First, we conducted descriptive statistics to understand what the distribution for the two variables are, where the Median Total Income variable had a relatively normal distribution with a skewness of 0.53, and the French Knowledge variable had a positive skewness of 2.51. This informs us that the French Knowledge dataset has a mode that is less than the mean, or that the data points are skewed to the right. We mapped the two variables (Fig. 1) and found that the highest total median incomes are located in City of Kelowna in clustered patterns, and the highest percentage of respondents with knowledge of French are distributed in the study area in clusters. 
 
 To determine if the variables are spatially autocorrelated, we conducted a global Moran's I test statistic and Z test on both datasets. We found that both Median Total Income and French Knowledge had significant positive spatial autocorrelation. We conducted a local Moran's I test, using the LISA function to understand local variability. These results were mapped (Fig. 3), and we found that Median Total Income had significant positive spatial autocorrelation in areas near the city, and areas with significant negative spatial autocorrelation near the city and to the southeast. For French Knowledge, we found that significant positive spatial autocorrelation had hotspots within the study area, and significant negative spatial autocorrelation was present in areas within the city of Kelowna and to the northeast. The scatterplot results for both variables showed overall positive spatial autocorrelation, with several significant points. In conclusion, we can reject the null hypothesis and conclude these two variables demonstrate positive spatial autocorrelation and contain several significant outliers. Income is a variable associated with spatial clustering as typically incomes of similar levels are located near each other, this is influenced by housing prices, relationship ties, education levels, accessibility modes, and location-based amenities [16]. Similarly, percentage of respondents with French knowledge are clustered due to the same reasons, that people with similar languages will likely be in similar areas. To improve further on this research, more tests could be applied to determine what other geographical variables are present that can explain why these two variables demonstrated positive spatial autocorrelation, such as land cover type or topography. 
@@ -330,7 +339,7 @@ To determine if the variables are spatially autocorrelated, we conducted a globa
 
 In this tutorial we have learned about R code and R markdown as tools to conduct statistical analysis on census data to determine if the chosen data is spatially autocorrelated. We discussed what spatial autocorrelation is and how it is important to include in analyses to understand how related observations are to themselves and their neighbours. We also learned about neighbour and weight matrix, and conducted descriptive statistics, global Moran's I, and local Moran's I on census data.
 
-## References:
+## References
 1.	Zhu, F., Shen, D., Liu, Z., Xiong, G., & Liu, X. (2012). Ch 8: An Approach to Optimize Police Patrol Activities Based on the Spatial Pattern of Crime Hotspots. In Service Science, Management, and Engineering (pp. 141–163). Elsevier Science & Technology. https://www.sciencedirect.com/science/article/abs/pii/B9780123970374000089
 2.	Waters, N. (2017). Tobler’s First Law of Geography. International Encyclopedia of Geography: People, the Earth, Environment and Technology, 1–13. https://doi.org/10.1002/9781118786352.wbieg1011
 3.	Getis, A. (2009). Spatial Autocorrelation. In A. Getis (Ed.), Handbook of Applied Spatial Analysis. Springer, Berlin, Heidelberg. https://link.springer.com/chapter/10.1007/978-3-642-03647-7_14#citeas
