@@ -6,7 +6,7 @@ For this tutorial, we are conducting spatial autocorrelation on census data for 
 
 To conduct spatial autocorrelation in this tutorial, we are using the application R Studio, with code that can be applied to R.markdown, a file format that produces a pdf output. To begin, we have to install several packages. In the code below, the '#' hashtag symbol indicates a note within R, and won't be read as code. Delete this symbol to enable the packages to be installed. Libraries are the directories where these packages are stored and have to be loaded into the code to be enabled [5].
   
-```{r Libraries, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE}
+```{r Libraries, eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE, error=FALSE}
 #install.packages("knitr")
 #install.packages("tmap")
 #install.packages("spdep")
@@ -240,9 +240,9 @@ The Z score for the Total Median Income variable is 15.5819, which is greater th
 
 ### Local Spatial Autocorrelation
 Local spatial autocorrelation is concerned about the relationships between each observation point and its surroundings, rather than the overall relationship of the points' spatial distribution [13]. Using the local indicators of spatial association (LISA) test we can conduct a local Moran's I analysis to determine how similar or dissimilar each point is to each other in the dataset [14]. The formula for the LISA test is similar to the Global Moran's I as seen below.
- 
+
 $$
-I_i = \frac{x_i - \bar{x}}{S_i^2}\sum{_{j=1}^n}W_{i,j}(x_j - \bar{x})\space \space where \space \space S_i^2 = \frac{\sum_{i=1}^n (x_i - \bar{x})^2}{n-1} 
+I_i = \frac{x_i - \bar{x}}{S_i^2}\sum_{j=1}^n W_{i,j}(x_j - \bar{x}) \quad \text{where} \quad S_i^2 = \frac{\sum_{j=1}^n (x_j - \bar{x})^2}{n-1}
 $$
 
 In R, we can use the 'lisa.testvariable' function to determine the local spatial autocorrelation for our two variables:
